@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .expense-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .expense-form input, .expense-form select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .expense-form button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .expense-form button:hover {
+            background-color: #218838;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total {
+            font-size: 1.2em;
+            font-weight: bold;
+            text-align: right;
+            margin-bottom: 20px;
+        }
+        .filter {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Expense Tracker</h1>
+    <div class="expense-form">
+        <input type="text" id="expense-name" placeholder="Expense Name">
+        <input type="number" id="expense-amount" placeholder="Amount">
+        <select id="expense-category">
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Other">Other</option>
+        </select>
+        <input type="date" id="expense-date">
+        <button id="add-expense">Add Expense</button>
+    </div>
+    <table id="expense-table">
+        <thead>
+            <tr>
+                <th>Expense Name</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+           
+        </tbody>
+    </table>
+    <div class="total">Total: $<span id="total-amount">0.00</span></div>
+    <div class="filter">
+        <label for="filter-category">Filter by Category:</label>
+        <select id="filter-category">
+            <option value="All">All</option>
+            <option value="Food">Food</option>
+            <option value="Transport">Transport</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <script>
+        let expenses = [];
+        let totalAmount = 0;
+
+        document.getElementById('add-expense').addEventListener('click', function() {
+            const name = document.getElementById('expense-name').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const date = document.getElementById('expense-date').value;
+
+            if (name && amount && category && date) {
+                const expense = {
+                    name,
+                    amount,
+                    category,
+                    date
+                };
+
+                expenses.push(expense);
+                addExpenseToTable(expense);
+                updateTotalAmount();
+            }
+        });
+
+        document.getElementById('filter-category').addEventListener('change', function() {
+            const category = this.value;
+            filterExpensesByCategory(category);
+        });
+
+        function addExpenseToTable(expense) {
+            const tableBody = document.getElementById('expense-table').querySelector('tbody');
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${expense.name}</td>
+                <td>$${expense.amount.toFixed(2)}</td>
+                <td>${expense.category}</td>
+                <td>${expense.date}</td>
+                <td>
+                    <button class="edit-btn">Edit</button>
+                    <button class="delete-btn">Delete</button>
+                </td>
+            `;
+
+            row.querySelector('.delete-btn').addEventListener('click', function() {
+                const index = expenses.indexOf(expense);
+                if (index > -1) {
+                    expenses.splice(index, 1);
+                    row.remove();
+                    updateTotalAmount();
+                }
+            });
+
+            row.querySelector('.edit-btn').addEventListener('click', function() {
+                document.getElementById('expense-name').value = expense.name;
+                document.getElementById('expense-amount').value = expense.amount;
+                document.getElementById('expense-category').value = expense.category;
+                document.getElementById('expense-date').value = expense.date;
+
+                const index = expenses.indexOf(expense);
+                if (index > -1) {
+                    expenses.splice(index, 1);
+                    row.remove();
+                    updateTotalAmount();
+                }
+            });
+
+            tableBody.appendChild(row);
+        }
+
+        function updateTotalAmount() {
+            totalAmount = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+            document.getElementById('total-amount').textContent = totalAmount.toFixed(2);
+        }
+
+        function filterExpensesByCategory(category) {
+            const tableBody = document.getElementById('expense-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+
+            const filteredExpenses = category === 'All' ? expenses : expenses.filter(expense => expense.category === category);
+
+            filteredExpenses.forEach(expense => addExpenseToTable(expense));
+        }
+    </script>
+</body>
+</html>
